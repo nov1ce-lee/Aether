@@ -33,33 +33,6 @@ npm install
 npm run dev
 ```
 
-### 3. 生产部署 (Systemd)
-
-对于 Linux 服务器，推荐使用 Systemd 进行持久化管理：
-
-1. **构建项目**:
-   ```bash
-   npm run build
-   ```
-
-2. **配置服务**:
-   将项目中的 `scripts/aether.service` 复制到系统目录（请根据实际路径修改文件中的 `WorkingDirectory` 和 `ExecStart`）：
-   ```bash
-   sudo cp scripts/aether.service /etc/systemd/system/
-   ```
-
-3. **启动并设置开机自启**:
-   ```bash
-   sudo systemctl daemon-reload
-   sudo systemctl enable aether
-   sudo systemctl start aether
-   ```
-
-4. **查看状态**:
-   ```bash
-   sudo systemctl status aether
-   ```
-
 ## 📄 开源协议
 
 本项目采用 [MIT License](LICENSE) 开源。
