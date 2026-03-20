@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Boxes, Zap } from "lucide-react";
+import { ArrowRight, Terminal, Boxes, Zap, Shield } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -25,36 +25,44 @@ export default function Home() {
         transition={{ delay: 0.3, duration: 0.8 }}
         className="text-xl md:text-2xl text-white/60 max-w-2xl font-light tracking-wide mb-12"
       >
-        <span className="text-white font-medium">AETHER，一个简单的工具站集合</span>
+        <span className="text-white font-medium">Aether</span>
+        <br />
+        简单、实用的开发者工具集合
       </motion.p>
 
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ delay: 0.6, duration: 0.8 }}
-        className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-4xl"
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full max-w-6xl"
       >
         <ToolCard
           href="/docker"
           icon={<Terminal className="w-6 h-6" />}
-          title="Docker 指令生成器"
-          description="从基础运行到高级构建，一站式生成所有 Docker 常用指令"
+          title="Docker 指令生成"
+          description={"快速生成常用的 Docker\n运行、构建与管理指令"}
           color="cyan"
         />
         <ToolCard
           href="/case-converter"
           icon={<Boxes className="w-6 h-6" />}
-          title="命名转换器"
-          description="在驼峰、下划线、中划线等命名规范间自由切换"
+          title="变量命名转换"
+          description={"支持驼峰、下划线、中划线等\n多种命名规范的互转"}
           color="violet"
         />
         <ToolCard
-          href="#"
+          href="/git-scribe"
           icon={<Zap className="w-6 h-6" />}
-          title="正则实验室"
-          description="实时可视化正则表达式的匹配逻辑。"
+          title="Git 提交规范"
+          description={"通过描述自动生成符合规范的\nGit Commit 信息"}
           color="cyan"
-          disabled
+        />
+        <ToolCard
+          href="/data-forge"
+          icon={<Shield className="w-6 h-6" />}
+          title="数据加解密"
+          description={"支持文本加解密以及二进制\n.dat 档案的解析与修改"}
+          color="violet"
         />
       </motion.div>
     </div>
@@ -89,7 +97,7 @@ function ToolCard({
       <h3 className="text-xl font-bold text-white mb-2 group-hover:text-glow transition-all">
         {title}
       </h3>
-      <p className="text-white/40 text-sm leading-relaxed">
+      <p className="text-white/40 text-sm leading-relaxed whitespace-pre-line">
         {description}
       </p>
       

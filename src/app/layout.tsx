@@ -30,9 +30,9 @@ export default function RootLayout({
     >
       <body className="min-h-screen bg-background text-foreground selection:bg-accent-cyan/30">
         <div className="aether-bg">
-          <div className="flux-orb w-[600px] h-[600px] bg-accent-violet top-[-200px] left-[-100px]" />
-          <div className="flux-orb w-[500px] h-[500px] bg-accent-cyan bottom-[-100px] right-[-100px] [animation-delay:-5s]" />
-          <div className="flux-orb w-[400px] h-[400px] bg-accent-violet top-[40%] right-[10%] [animation-delay:-10s]" />
+          <div className="flux-orb orb-1 w-[800px] h-[800px] bg-accent-violet top-[-200px] left-[-100px]" />
+          <div className="flux-orb orb-2 w-[600px] h-[600px] bg-accent-cyan bottom-[-100px] right-[-100px]" />
+          <div className="flux-orb orb-3 w-[500px] h-[500px] bg-accent-violet top-[40%] right-[10%]" />
         </div>
         
         <main className="relative z-10 pt-10 pb-32 px-6 max-w-7xl mx-auto min-h-screen">
@@ -40,7 +40,7 @@ export default function RootLayout({
           
           <footer className="mt-20 py-8 border-t border-white/5 text-center">
             <p className="text-white/20 text-xs font-mono tracking-[0.2em] uppercase">
-              Aether Tool Protocol © 2026. Experimental Interface.
+              Aether Tool Collection © 2026.
             </p>
           </footer>
         </main>

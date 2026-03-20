@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Boxes, Home, Info, Terminal } from "lucide-react";
+import { Boxes, Home, Info, Terminal, Zap, Shield } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
-  { name: "首页", href: "/", icon: Home },
-  { name: "Docker", href: "/docker", icon: Terminal },
-  { name: "命名转换", href: "/case-converter", icon: Boxes },
-  { name: "关于", href: "/about", icon: Info },
+  { name: "首页", href: "/", icon: Home, color: "text-accent-cyan" },
+  { name: "Docker", href: "/docker", icon: Terminal, color: "text-accent-cyan" },
+  { name: "命名转换", href: "/case-converter", icon: Boxes, color: "text-accent-violet" },
+  { name: "Git 提交", href: "/git-scribe", icon: Zap, color: "text-accent-cyan" },
+  { name: "数据工具", href: "/data-forge", icon: Shield, color: "text-accent-violet" },
 ];
 
 export function Navbar() {
@@ -42,7 +43,7 @@ export function Navbar() {
                   transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
                 />
               )}
-              <item.icon className={cn("w-4 h-4", isActive ? "text-accent-cyan" : "group-hover:scale-110 transition-transform")} />
+              <item.icon className={cn("w-4 h-4", isActive ? item.color : "group-hover:scale-110 transition-transform")} />
               <span className="text-sm font-medium">{item.name}</span>
             </Link>
           );

@@ -130,10 +130,10 @@ export default function DockerGenerator() {
           <div className="p-3 bg-accent-cyan/10 rounded-2xl">
             <Terminal className="text-accent-cyan w-10 h-10" />
           </div>
-          Docker 指令生成器
+          Docker 指令生成
         </h2>
         <p className="text-white/40 text-lg max-w-2xl">
-          从基础运行到高级构建，一键生成所有 Docker 常用指令
+          快速生成常用的 Docker 运行、构建与管理指令
         </p>
       </motion.div>
 
@@ -318,7 +318,7 @@ export default function DockerGenerator() {
         <div className="lg:col-span-5 sticky top-10">
           <div className="glass-card p-6 flex flex-col h-full border-accent-cyan/20">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2">
+              <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2 font-bold">
                 <Terminal className="w-4 h-4" /> 实时指令输出
               </h3>
               <button 
@@ -368,7 +368,7 @@ export default function DockerGenerator() {
 function Section({ title, icon: Icon, children }: { title: string; icon: any; children: React.ReactNode }) {
   return (
     <div className="glass-card p-6 space-y-4">
-      <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase mb-2 flex items-center gap-2">
+      <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase mb-2 flex items-center gap-2 font-bold">
         <Icon className="w-4 h-4" /> {title}
       </h3>
       {children}
