@@ -23,6 +23,12 @@
 # misc
 .DS_Store
 *.pem
+.vscode/
+.idea/
+.trae/
+*.log
+.env.local
+.env.*.local
 
 # debug
 npm-debug.log*
