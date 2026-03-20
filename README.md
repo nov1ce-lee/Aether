@@ -43,16 +43,29 @@ npm install
 
 ### 4. 启动开发服务器
 ```bash
+# 默认 3000 端口
 npm run dev
+
+# 如果端口被占用，可以指定端口
+PORT=4000 npm run dev
 ```
 打开浏览器访问 [http://localhost:3000](http://localhost:3000) 即可看到效果。
 
-### 5. 生产构建
-如果你需要部署到生产环境：
+### 5. 生产构建与部署
+针对 2C2G 等低配置 ECS 服务器，建议如下操作：
+
+#### 修改端口
 ```bash
-npm run build
-npm start
+# 在启动时通过环境变量指定端口
+PORT=4000 npm start
 ```
+
+#### 构建优化
+如果你在服务器上执行 `npm run build` 导致死机或响应缓慢：
+- **方案 A (推荐)**: 增加 Swap 虚拟内存（建议 2-4G），这是解决低内存服务器构建失败的最有效方式。
+- **方案 B**: 在本地完成构建，仅将 `.next`、`public`、`package.json` 等文件上传至服务器（配合 `output: 'standalone'` 选项）。
+- **方案 C**: 我们已在 `next.config.ts` 中配置了 `experimental.cpus: 1` 以限制构建时的 CPU 负载。
+
 
 ## 🧪 技术栈
 
