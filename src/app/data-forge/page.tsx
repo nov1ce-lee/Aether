@@ -358,7 +358,7 @@ export default function DataForge() {
                 <Terminal className="w-4 h-4" /> 锻造台
               </h3>
               <div className="flex gap-2">
-                <button onClick={() => setInput("") || setOutput("")} className="p-2 text-white/20 hover:text-white/60 transition-colors">
+                <button onClick={() => { setInput(""); setOutput(""); }} className="p-2 text-white/20 hover:text-white/60 transition-colors">
                   <RefreshCw className="w-4 h-4" />
                 </button>
               </div>
