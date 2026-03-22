@@ -25,9 +25,7 @@ export default function Home() {
         transition={{ delay: 0.3, duration: 0.8 }}
         className="text-xl md:text-2xl text-white/60 max-w-2xl font-light tracking-wide mb-12"
       >
-        <span className="text-white font-medium">Aether</span>
-        <br />
-        简单、实用的开发者工具集合
+        <span className="text-white font-medium">实验性工具站，简单、实用的开发者工具集合</span>
       </motion.p>
 
       <motion.div
