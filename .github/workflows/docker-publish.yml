@@ -41,8 +41,8 @@ jobs:
         with:
           context: .
           push: true
-          tags: ${{ id.meta.outputs.tags }}
-          labels: ${{ id.meta.outputs.labels }}
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
           # 针对低配服务器优化构建过程
           build-args: |
             NEXT_TELEMETRY_DISABLED=1
