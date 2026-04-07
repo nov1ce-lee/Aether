@@ -5,6 +5,9 @@
   --color-foreground: #ffffff;
   --color-accent-cyan: #00f5ff;
   --color-accent-violet: #8b5cf6;
+  --color-accent-rose: #fb7185;
+  --color-accent-emerald: #10b981;
+  --color-accent-amber: #f59e0b;
   --color-glass: rgba(255, 255, 255, 0.03);
   --color-glass-border: rgba(255, 255, 255, 0.1);
 }

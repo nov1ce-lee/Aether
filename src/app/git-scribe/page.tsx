@@ -117,10 +117,10 @@ export default function GitScribe() {
 
   return (
     <div className="max-w-6xl mx-auto pb-20">
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10">
-        <h2 className="text-5xl font-black mb-4 flex items-center gap-4">
-          <div className="p-3 bg-accent-cyan/10 rounded-2xl">
-            <Zap className="text-accent-cyan w-10 h-10 animate-pulse" />
+      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 text-center lg:text-left">
+        <h2 className="text-5xl font-black mb-4 flex items-center justify-center lg:justify-start gap-4">
+          <div className="p-3 bg-accent-amber/10 rounded-2xl">
+            <Zap className="text-accent-amber w-10 h-10 animate-pulse" />
           </div>
           Git 提交规范
         </h2>
@@ -133,16 +133,16 @@ export default function GitScribe() {
         {/* Left: Configuration */}
         <div className="lg:col-span-7 space-y-6">
           {/* AI Generator Section */}
-          <div className="glass-card p-6 border-accent-cyan/20">
+          <div className="glass-card p-6 border-accent-amber/20">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2 font-bold">
+              <h3 className="text-sm font-mono text-accent-amber tracking-widest uppercase flex items-center gap-2 font-bold">
                 <Zap className="w-4 h-4" /> AI 智能生成
               </h3>
               <button 
                 onClick={() => setShowConfig(!showConfig)}
                 className={cn(
                   "p-2 rounded-lg transition-all duration-300",
-                  showConfig ? "bg-accent-cyan/20 text-accent-cyan" : "text-white/20 hover:text-white/60"
+                  showConfig ? "bg-accent-amber/20 text-accent-amber" : "text-white/20 hover:text-white/60"
                 )}
                 title="API 配置"
               >
@@ -167,7 +167,7 @@ export default function GitScribe() {
                           value={apiKey}
                           onChange={(e) => setApiKey(e.target.value)}
                           placeholder="sk-..."
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-cyan/50 text-xs font-mono"
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-amber/50 text-xs font-mono"
                         />
                       </div>
                       <div className="space-y-2">
@@ -177,7 +177,7 @@ export default function GitScribe() {
                           value={apiModel}
                           onChange={(e) => setAiModel(e.target.value)}
                           placeholder="gpt-3.5-turbo"
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-cyan/50 text-xs font-mono"
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-amber/50 text-xs font-mono"
                         />
                       </div>
                     </div>
@@ -188,13 +188,13 @@ export default function GitScribe() {
                           value={apiEndpoint}
                           onChange={(e) => setApiEndpoint(e.target.value)}
                           placeholder="例如: https://api.deepseek.com/v1"
-                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-cyan/50 text-xs font-mono"
+                          className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-accent-amber/50 text-xs font-mono"
                         />
                       </div>
                     <div className="flex justify-end">
                       <button
                         onClick={saveConfig}
-                        className="px-4 py-1.5 bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20 rounded-lg text-xs font-bold hover:bg-accent-cyan/20 transition-all"
+                        className="px-4 py-1.5 bg-accent-amber/10 text-accent-amber border border-accent-amber/20 rounded-lg text-xs font-bold hover:bg-accent-amber/20 transition-all"
                       >
                         保存配置
                       </button>
@@ -210,7 +210,7 @@ export default function GitScribe() {
                 value={aiPrompt}
                 onChange={(e) => setAiPrompt(e.target.value)}
                 placeholder="输入你的改动想法，例如：我修复了侧边栏在手机上显示不全的问题"
-                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-sm"
+                className="flex-1 bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-amber/50 transition-all text-sm"
                 onKeyDown={(e) => e.key === 'Enter' && generateWithAI()}
               />
               <button
@@ -219,8 +219,8 @@ export default function GitScribe() {
                 className={cn(
                   "px-6 py-2.5 rounded-lg text-sm font-bold transition-all duration-300 flex items-center gap-2",
                   isGenerating 
-                    ? "bg-accent-cyan/20 text-accent-cyan/50 cursor-not-allowed" 
-                    : "bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20 hover:bg-accent-cyan/20"
+                    ? "bg-accent-amber/20 text-accent-amber/50 cursor-not-allowed" 
+                    : "bg-accent-amber/10 text-accent-amber border border-accent-amber/20 hover:bg-accent-amber/20"
                 )}
               >
                 {isGenerating ? (
@@ -239,7 +239,7 @@ export default function GitScribe() {
           </div>
 
           <div className="glass-card p-6">
-            <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase mb-6 flex items-center gap-2 font-bold">
+            <h3 className="text-sm font-mono text-accent-amber tracking-widest uppercase mb-6 flex items-center gap-2 font-bold">
               <Star className="w-4 h-4" /> 选择提交类型
             </h3>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
@@ -250,7 +250,7 @@ export default function GitScribe() {
                   className={cn(
                     "flex flex-col items-center gap-2 p-3 rounded-xl border transition-all duration-300 group",
                     selectedType === opt.type 
-                      ? "bg-white/10 border-accent-cyan/50 shadow-lg shadow-accent-cyan/10" 
+                      ? "bg-white/10 border-accent-amber/50 shadow-lg shadow-accent-amber/10" 
                       : "bg-white/5 border-white/5 hover:border-white/20 hover:bg-white/5"
                   )}
                 >
@@ -268,7 +268,7 @@ export default function GitScribe() {
 
           <div className="glass-card p-6 space-y-6">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2 font-bold">
+              <h3 className="text-sm font-mono text-accent-amber tracking-widest uppercase flex items-center gap-2 font-bold">
                 <Terminal className="w-4 h-4" /> 详细信息
               </h3>
               <button onClick={clearAll} className="text-white/20 hover:text-red-400 transition-colors">
@@ -284,7 +284,7 @@ export default function GitScribe() {
                   value={scope}
                   onChange={(e) => setScope(e.target.value)}
                   placeholder="例如: auth, ui, core"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-amber/50 transition-all text-sm"
                 />
               </div>
               <div className="space-y-2">
@@ -294,7 +294,7 @@ export default function GitScribe() {
                   value={subject}
                   onChange={(e) => setSubject(e.target.value)}
                   placeholder="修复了登录按钮无法点击的问题"
-                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-sm"
+                  className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-amber/50 transition-all text-sm"
                 />
               </div>
             </div>
@@ -305,7 +305,7 @@ export default function GitScribe() {
                 value={body}
                 onChange={(e) => setBody(e.target.value)}
                 placeholder="详细解释改动的原因和影响..."
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-sm min-h-[100px] resize-none"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-amber/50 transition-all text-sm min-h-[100px] resize-none"
               />
             </div>
 
@@ -316,7 +316,7 @@ export default function GitScribe() {
                 value={footer}
                 onChange={(e) => setFooter(e.target.value)}
                 placeholder="例如: Closes #123, BREAKING CHANGE"
-                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-sm"
+                className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-accent-amber/50 transition-all text-sm"
               />
             </div>
           </div>
@@ -324,9 +324,9 @@ export default function GitScribe() {
 
         {/* Right: Preview */}
         <div className="lg:col-span-5 sticky top-10">
-          <div className="glass-card p-6 flex flex-col h-full border-accent-cyan/20">
+          <div className="glass-card p-6 flex flex-col h-full border-accent-amber/20">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2 font-bold">
+              <h3 className="text-sm font-mono text-accent-amber tracking-widest uppercase flex items-center gap-2 font-bold">
                 <Info className="w-4 h-4" /> 规范预览
               </h3>
               <button 
@@ -334,7 +334,7 @@ export default function GitScribe() {
                 disabled={!subject}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 disabled:opacity-30 disabled:cursor-not-allowed",
-                  copied ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-accent-cyan/10 text-accent-cyan border border-accent-cyan/20 hover:bg-accent-cyan/20"
+                  copied ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-accent-amber/10 text-accent-amber border border-accent-amber/20 hover:bg-accent-amber/20"
                 )}
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
@@ -357,8 +357,8 @@ export default function GitScribe() {
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2 }}
                   >
-                    <span className="text-accent-cyan font-bold">{selectedType}</span>
-                    {scope && <span className="text-accent-violet">{`(${scope})`}</span>}
+                    <span className="text-accent-amber font-bold">{selectedType}</span>
+                    {scope && <span className="text-accent-amber/60">{`(${scope})`}</span>}
                     <span className="text-white/40">: </span>
                     <span>{subject || "<summary>"}</span>
                     {body && <div className="mt-4 text-white/50">{body}</div>}
@@ -366,7 +366,7 @@ export default function GitScribe() {
                   </motion.div>
                 </AnimatePresence>
               </div>
-              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent-cyan/5 blur-3xl rounded-full" />
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent-amber/5 blur-3xl rounded-full" />
             </div>
 
             <div className="mt-8 space-y-4">
@@ -379,7 +379,7 @@ export default function GitScribe() {
                   "Body 建议在 72 字符处换行",
                 ].map((tip, i) => (
                   <li key={i} className="flex items-start gap-2 text-[11px] text-white/40">
-                    <div className="w-1 h-1 rounded-full bg-accent-cyan/40 mt-1.5" />
+                    <div className="w-1 h-1 rounded-full bg-accent-amber/40 mt-1.5" />
                     {tip}
                   </li>
                 ))}

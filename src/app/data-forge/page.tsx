@@ -223,13 +223,13 @@ export default function DataForge() {
     <div className="max-w-6xl mx-auto pb-20">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 text-center lg:text-left">
         <h2 className="text-5xl font-black mb-4 flex items-center justify-center lg:justify-start gap-4">
-          <div className="p-3 bg-accent-violet/10 rounded-2xl">
-            <Shield className="text-accent-violet w-10 h-10" />
+          <div className="p-3 bg-accent-rose/10 rounded-2xl">
+            <Shield className="text-accent-rose w-10 h-10" />
           </div>
           数据加解密
         </h2>
         <p className="text-white/40 text-lg max-w-2xl">
-          支持文本加解密与二进制 .dat 档案的解析修改
+          支持文本加解密与二进制 .dat 文件的解析修改
         </p>
       </motion.div>
 
@@ -251,7 +251,7 @@ export default function DataForge() {
             mode === 'dat' ? "bg-white/10 text-white shadow-lg" : "text-white/40 hover:text-white/70"
           )}
         >
-          <HardDrive className="w-4 h-4" /> .dat 档案解析
+          <HardDrive className="w-4 h-4" /> .dat 文件解析
         </button>
       </div>
 
@@ -268,7 +268,7 @@ export default function DataForge() {
               className="space-y-6"
             >
               <div className="glass-card p-6 space-y-6">
-                <h3 className="text-sm font-mono text-accent-violet tracking-widest uppercase mb-2 flex items-center gap-2 font-bold">
+                <h3 className="text-sm font-mono text-accent-rose tracking-widest uppercase mb-2 flex items-center gap-2 font-bold">
                   <Settings className="w-4 h-4" /> 算法配置
                 </h3>
 
@@ -294,7 +294,7 @@ export default function DataForge() {
                           onClick={() => setEncoding(enc as Encoding)}
                           className={cn(
                             "flex-1 py-2 rounded-lg text-xs font-bold border transition-all",
-                            encoding === enc ? "bg-accent-violet/20 border-accent-violet/50 text-white" : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
+                            encoding === enc ? "bg-accent-rose/20 border-accent-rose/50 text-white" : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
                           )}
                         >
                           {enc}
@@ -313,7 +313,7 @@ export default function DataForge() {
                           value={key}
                           onChange={(e) => setKey(e.target.value)}
                           placeholder="输入加密密钥..."
-                          className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-accent-violet/50 transition-all text-sm"
+                          className="w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2 text-white focus:outline-none focus:border-accent-rose/50 transition-all text-sm"
                         />
                       </div>
                     </div>
@@ -322,13 +322,13 @@ export default function DataForge() {
               </div>
 
               {mode === 'dat' && (
-                <div className="glass-card p-6 border-dashed border-accent-violet/30">
-                  <h3 className="text-sm font-mono text-accent-violet tracking-widest uppercase mb-4 flex items-center gap-2 font-bold">
-                    <Upload className="w-4 h-4" /> 档案导入
+                <div className="glass-card p-6 border-dashed border-accent-rose/30">
+                  <h3 className="text-sm font-mono text-accent-rose tracking-widest uppercase mb-4 flex items-center gap-2 font-bold">
+                    <Upload className="w-4 h-4" /> 文件导入
                   </h3>
                   <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-white/5 border-dashed rounded-xl cursor-pointer hover:bg-white/5 transition-all group">
                     <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 text-white/20 group-hover:text-accent-violet/50 transition-colors mb-2" />
+                      <Upload className="w-8 h-8 text-white/20 group-hover:text-accent-rose/50 transition-colors mb-2" />
                       <p className="text-sm text-white/40">{datFile ? datFile.name : "选择 .dat 文件"}</p>
                     </div>
                     <input type="file" className="hidden" onChange={handleFileUpload} accept=".dat" />
@@ -336,7 +336,7 @@ export default function DataForge() {
                 </div>
               )}
 
-              <div className="glass-card p-6 bg-accent-violet/5 border-accent-violet/10">
+              <div className="glass-card p-6 bg-accent-rose/5 border-accent-rose/10">
                 <h4 className="text-xs font-bold text-white/40 uppercase tracking-widest mb-3 flex items-center gap-2">
                   <Info className="w-3 h-3" /> 使用指南
                 </h4>
@@ -354,8 +354,8 @@ export default function DataForge() {
         <div className="lg:col-span-7 space-y-6">
           <div className="glass-card p-6 flex flex-col min-h-[500px]">
             <div className="flex justify-between items-center mb-6">
-              <h3 className="text-sm font-mono text-accent-violet tracking-widest uppercase flex items-center gap-2 font-bold">
-                <Terminal className="w-4 h-4" /> 锻造台
+              <h3 className="text-sm font-mono text-accent-rose tracking-widest uppercase flex items-center gap-2 font-bold">
+                <Terminal className="w-4 h-4" /> 工作台
               </h3>
               <div className="flex gap-2">
                 <button onClick={() => { setInput(""); setOutput(""); }} className="p-2 text-white/20 hover:text-white/60 transition-colors">
@@ -369,7 +369,7 @@ export default function DataForge() {
                 <div className="flex justify-between items-center">
                   <label className="text-[10px] text-white/40 uppercase font-bold tracking-wider ml-1">输入 (明文/编码串)</label>
                   {input && (
-                    <button onClick={() => copyToClipboard(input)} className="text-[10px] text-accent-violet hover:underline flex items-center gap-1">
+                    <button onClick={() => copyToClipboard(input)} className="text-[10px] text-accent-rose hover:underline flex items-center gap-1">
                       {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} 复制
                     </button>
                   )}
@@ -378,14 +378,14 @@ export default function DataForge() {
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder={mode === 'text' ? "输入需要加解密的文本..." : "导入 .dat 后此处将显示提取到的编码串..."}
-                  className="flex-1 w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-accent-violet/50 transition-all font-mono text-sm resize-none"
+                  className="flex-1 w-full bg-white/5 border border-white/10 rounded-xl p-4 text-white focus:outline-none focus:border-accent-rose/50 transition-all font-mono text-sm resize-none"
                 />
               </div>
 
               <div className="flex gap-4">
                 <button
                   onClick={handleEncrypt}
-                  className="flex-1 bg-accent-violet/10 text-accent-violet border border-accent-violet/20 rounded-xl py-3 font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent-violet/20 transition-all"
+                  className="flex-1 bg-accent-rose/10 text-accent-rose border border-accent-rose/20 rounded-xl py-3 font-bold text-sm flex items-center justify-center gap-2 hover:bg-accent-rose/20 transition-all"
                 >
                   <Lock className="w-4 h-4" /> 加密 & 编码 →
                 </button>
@@ -402,7 +402,7 @@ export default function DataForge() {
                   <label className="text-[10px] text-white/40 uppercase font-bold tracking-wider ml-1">输出 (结果/JSON)</label>
                   <div className="flex gap-3">
                     {output && (
-                      <button onClick={() => copyToClipboard(output)} className="text-[10px] text-accent-violet hover:underline flex items-center gap-1">
+                      <button onClick={() => copyToClipboard(output)} className="text-[10px] text-accent-rose hover:underline flex items-center gap-1">
                         {copied ? <Check className="w-3 h-3" /> : <Copy className="w-3 h-3" />} 复制结果
                       </button>
                     )}
@@ -417,7 +417,7 @@ export default function DataForge() {
                   value={output}
                   onChange={(e) => setOutput(e.target.value)}
                   placeholder="结果将在此处显示..."
-                  className="flex-1 w-full bg-black/40 border border-white/5 rounded-xl p-4 text-accent-violet/90 focus:outline-none focus:border-accent-violet/50 transition-all font-mono text-sm resize-none"
+                  className="flex-1 w-full bg-black/40 border border-white/5 rounded-xl p-4 text-accent-rose/90 focus:outline-none focus:border-accent-rose/50 transition-all font-mono text-sm resize-none"
                 />
               </div>
             </div>

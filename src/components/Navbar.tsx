@@ -3,15 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion } from "framer-motion";
-import { Boxes, Home, Info, Terminal, Zap, Shield } from "lucide-react";
+import { Boxes, Home, Terminal, Zap, Shield, Database } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const navItems = [
   { name: "首页", href: "/", icon: Home, color: "text-accent-cyan" },
   { name: "Docker", href: "/docker", icon: Terminal, color: "text-accent-cyan" },
+  { name: "SQL 生成", href: "/sql-generator", icon: Database, color: "text-accent-emerald" },
   { name: "命名转换", href: "/case-converter", icon: Boxes, color: "text-accent-violet" },
-  { name: "Git 提交", href: "/git-scribe", icon: Zap, color: "text-accent-cyan" },
-  { name: "数据工具", href: "/data-forge", icon: Shield, color: "text-accent-violet" },
+  { name: "Git 提交", href: "/git-scribe", icon: Zap, color: "text-accent-amber" },
+  { name: "数据工具", href: "/data-forge", icon: Shield, color: "text-accent-rose" },
 ];
 
 export function Navbar() {

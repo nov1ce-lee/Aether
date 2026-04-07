@@ -1,0 +1,19 @@
+services:
+  aether:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aether-app
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - PORT=3001
+      - HOSTNAME=0.0.0.0
+    networks:
+      - aether-network
+
+networks:
+  aether-network:
+    driver: bridge
