@@ -1,8 +1,11 @@
 import type { NextConfig } from "next";
 
+const isGithubActions = process.env.GITHUB_ACTIONS === 'true';
+
 const nextConfig: NextConfig = {
   /* config options here */
-  output: 'standalone', // 启用独立服务器模式，支持 API 路由且减小镜像体积
+  output: isGithubActions ? 'export' : 'standalone', // GitHub Actions 环境使用 export，本地/Docker 使用 standalone
+  basePath: isGithubActions ? '/Aether' : '', // GitHub Pages 部署在子路径下
   experimental: {
     cpus: 1, // 限制构建 CPU 核心数，防止 2C2G 服务器 OOM 或卡死
   },
