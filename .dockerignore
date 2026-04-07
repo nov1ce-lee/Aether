@@ -8,10 +8,6 @@ LICENSE
 Dockerfile
 docker-compose.yml
 .github
-eslint.config.mjs
-postcss.config.mjs
-tsconfig.json
-package-lock.json
 npm-debug.log
 yarn-debug.log
 yarn-error.log
