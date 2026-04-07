@@ -28,12 +28,13 @@ export default function SqlGenerator() {
   const [inputSql, setInputSql] = useState("");
   const [tableName, setTableName] = useState("");
   const [fields, setFields] = useState<Field[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
   const [generatedSql, setGeneratedSql] = useState("");
   const [copied, setCopied] = useState(false);
   
   // Selection state for drag selection
   const [isSelecting, setIsSelecting] = useState(false);
-  const [selectionStart, setSelectionStart] = useState<number | null>(null);
+  const [selectionStartName, setSelectionStartName] = useState<string | null>(null);
 
   // Generation Options
   const [options, setOptions] = useState({
@@ -45,6 +46,14 @@ export default function SqlGenerator() {
   });
 
   const [whereFilters, setWhereFilters] = useState<WhereFilter[]>([]);
+
+  const filteredFields = useMemo(() => {
+    return fields.filter(f => 
+      f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      f.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      f.type.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [fields, searchQuery]);
 
   // Parse MySQL CREATE TABLE
   const parseSql = (sql: string) => {
@@ -166,37 +175,37 @@ export default function SqlGenerator() {
     setWhereFilters(whereFilters.map(f => f.id === id ? { ...f, ...updates } : f));
   };
 
-  const toggleField = (index: number) => {
-    const newFields = [...fields];
-    newFields[index].selected = !newFields[index].selected;
-    setFields(newFields);
+  const toggleFieldByName = (name: string) => {
+    setFields(prev => prev.map(f => f.name === name ? { ...f, selected: !f.selected } : f));
   };
 
-  const handleMouseDown = (index: number) => {
+  const handleMouseDown = (name: string) => {
     setIsSelecting(true);
-    setSelectionStart(index);
-    toggleField(index);
+    setSelectionStartName(name);
+    toggleFieldByName(name);
   };
 
-  const handleMouseEnter = (index: number) => {
-    if (isSelecting && selectionStart !== null) {
-      const start = Math.min(selectionStart, index);
-      const end = Math.max(selectionStart, index);
-      const targetState = fields[selectionStart].selected;
+  const handleMouseEnter = (name: string) => {
+    if (isSelecting && selectionStartName !== null) {
+      const startIndex = fields.findIndex(f => f.name === selectionStartName);
+      const currentIndex = fields.findIndex(f => f.name === name);
       
-      const newFields = fields.map((f, i) => {
+      const start = Math.min(startIndex, currentIndex);
+      const end = Math.max(startIndex, currentIndex);
+      const targetState = fields[startIndex].selected;
+      
+      setFields(prev => prev.map((f, i) => {
         if (i >= start && i <= end) {
           return { ...f, selected: targetState };
         }
         return f;
-      });
-      setFields(newFields);
+      }));
     }
   };
 
   const handleMouseUp = () => {
     setIsSelecting(false);
-    setSelectionStart(null);
+    setSelectionStartName(null);
   };
 
   useEffect(() => {
@@ -386,13 +395,26 @@ export default function SqlGenerator() {
         {/* Right: Fields Selection & Preview */}
         <div className="lg:col-span-7 space-y-6">
           <div className="glass-card p-6 flex flex-col min-h-[300px]">
-            <div className="flex justify-between items-center mb-6">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
               <h3 className="text-sm font-mono text-accent-emerald tracking-widest uppercase flex items-center gap-2 font-bold">
                 <ListChecks className="w-4 h-4" /> 字段选择 {fields.length > 0 && `(${fields.filter(f => f.selected).length}/${fields.length})`}
               </h3>
-              <div className="flex gap-3">
-                <button onClick={() => selectAll(true)} className="text-[10px] text-accent-emerald hover:underline uppercase font-bold">全选</button>
-                <button onClick={() => selectAll(false)} className="text-[10px] text-white/20 hover:text-white/40 hover:underline uppercase font-bold">清空</button>
+              
+              <div className="flex flex-1 w-full md:w-auto items-center gap-3">
+                <div className="relative flex-1 max-w-[200px]">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
+                  <input
+                    type="text"
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    placeholder="搜索字段..."
+                    className="w-full bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent-emerald/50 transition-all"
+                  />
+                </div>
+                <div className="flex gap-3 shrink-0">
+                  <button onClick={() => selectAll(true)} className="text-[10px] text-accent-emerald hover:underline uppercase font-bold">全选</button>
+                  <button onClick={() => selectAll(false)} className="text-[10px] text-white/20 hover:text-white/40 hover:underline uppercase font-bold">清空</button>
+                </div>
               </div>
             </div>
 
@@ -404,14 +426,14 @@ export default function SqlGenerator() {
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar select-none">
-                  {fields.map((field, index) => (
+                  {filteredFields.map((field, index) => (
                     <motion.div
                       key={field.name}
                       initial={{ opacity: 0, x: 10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: index * 0.02 }}
-                      onMouseDown={() => handleMouseDown(index)}
-                      onMouseEnter={() => handleMouseEnter(index)}
+                      transition={{ delay: index * 0.01 }}
+                      onMouseDown={() => handleMouseDown(field.name)}
+                      onMouseEnter={() => handleMouseEnter(field.name)}
                       className={cn(
                         "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-300 group",
                         field.selected 

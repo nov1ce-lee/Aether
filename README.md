@@ -35,18 +35,31 @@ npm install
 npm run dev
 ```
 
-### 🐳 3. Docker 一键部署
-你可以通过 Docker 快速构建并部署 Aether：
+### 🐳 3. Docker 部署
+
+#### 方式 A：直接拉取镜像 (推荐)
+你可以直接拉取已构建好的 Docker 镜像（托管于 GitHub Packages）：
+
+```bash
+# 拉取镜像
+docker pull ghcr.io/nov1ce-lee/aether:latest
+
+# 启动容器
+docker run -d -p 3001:3001 --name aether ghcr.io/nov1ce-lee/aether:latest
+```
+
+#### 方式 B：本地构建部署
+如果你想在本地自行构建：
 
 ```bash
 # 构建镜像
 docker build -t aether-app .
 
-# 启动容器 (映射端口 3001)
+# 启动容器
 docker run -d -p 3001:3001 --name aether aether-app
 ```
 
-或者使用 Docker Compose 一键启动：
+或者使用 Docker Compose：
 ```bash
 docker compose up -d
 ```
