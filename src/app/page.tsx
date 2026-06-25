@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { ArrowRight, Terminal, Boxes, Zap, Shield, Database } from "lucide-react";
+import { ArrowRight, Terminal, Boxes, Zap, Shield, Database, Clock } from "lucide-react";
 import Link from "next/link";
 
 export default function Home() {
@@ -54,6 +54,13 @@ export default function Home() {
           title="变量命名转换"
           description={"支持驼峰、下划线、中划线等\n多种命名规范的互转"}
           color="violet"
+        />
+        <ToolCard
+          href="/timestamp"
+          icon={<Clock className="w-7 h-7" />}
+          title="时间戳转换"
+          description={"Unix 时间戳与 UTC 时间\n互相转换，快捷方便"}
+          color="cyan"
         />
         <ToolCard
           href="/git-scribe"

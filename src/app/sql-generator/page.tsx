@@ -2,13 +2,14 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Database, Copy, Check, RefreshCw, Type, 
-  Settings, Info, Terminal, Search, 
+import {
+  Database, Copy, Check, RefreshCw, Type,
+  Settings, Info, Terminal, Search,
   Table, ListChecks, ArrowDownAZ, Hash, MousePointer2,
-  Plus, X, Filter
+  Plus, X, Filter, History, Star, Trash2, Save
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useSqlHistory } from "@/lib/useSqlHistory";
 
 interface Field {
   name: string;
@@ -31,7 +32,7 @@ export default function SqlGenerator() {
   const [searchQuery, setSearchQuery] = useState("");
   const [generatedSql, setGeneratedSql] = useState("");
   const [copied, setCopied] = useState(false);
-  
+
   // Selection state for drag selection
   const [isSelecting, setIsSelecting] = useState(false);
   const [selectionStartName, setSelectionStartName] = useState<string | null>(null);
@@ -47,8 +48,62 @@ export default function SqlGenerator() {
 
   const [whereFilters, setWhereFilters] = useState<WhereFilter[]>([]);
 
+  // History & Favorites
+  const {
+    records,
+    favorites,
+    addRecord,
+    deleteRecord,
+    toggleFavorite,
+    updateLabel,
+    clearAll: clearHistory,
+  } = useSqlHistory();
+  const [showHistory, setShowHistory] = useState(false);
+  const [historyFilter, setHistoryFilter] = useState<"all" | "favorites">("all");
+  const [editingLabel, setEditingLabel] = useState<string | null>(null);
+  const [editLabelValue, setEditLabelValue] = useState("");
+  const [historySearch, setHistorySearch] = useState("");
+
+  const displayedRecords = (historyFilter === "favorites" ? favorites : records)
+    .filter(r => {
+      if (!historySearch.trim()) return true;
+      const q = historySearch.toLowerCase();
+      return (
+        r.sql.toLowerCase().includes(q) ||
+        r.tableName.toLowerCase().includes(q) ||
+        (r.label && r.label.toLowerCase().includes(q))
+      );
+    });
+
+  const saveToHistory = () => {
+    if (!generatedSql || !tableName) return;
+    addRecord(generatedSql, tableName);
+  };
+
+  const loadFromHistory = (record: { sql: string; tableName: string }) => {
+    setGeneratedSql(record.sql);
+    document.getElementById("sql-preview")?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleEditLabel = (id: string, currentLabel: string | undefined) => {
+    setEditingLabel(id);
+    setEditLabelValue(currentLabel || "");
+  };
+
+  const submitLabel = (id: string) => {
+    updateLabel(id, editLabelValue.trim());
+    setEditingLabel(null);
+    setEditLabelValue("");
+  };
+
+  const copyHistorySql = (sql: string) => {
+    navigator.clipboard.writeText(sql);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
   const filteredFields = useMemo(() => {
-    return fields.filter(f => 
+    return fields.filter(f =>
       f.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.comment.toLowerCase().includes(searchQuery.toLowerCase()) ||
       f.type.toLowerCase().includes(searchQuery.toLowerCase())
@@ -66,16 +121,15 @@ export default function SqlGenerator() {
       setTableName(extractedTableName);
 
       // Extract fields
-      // This is a more robust regex parser for MySQL CREATE TABLE
       const extractedFields: Field[] = [];
-      
+
       // Look for the part inside CREATE TABLE (...)
       const bodyMatch = sql.match(/CREATE\s+TABLE\s+[`]?\w+[`]?\s*\(([\s\S]*)\)/i);
       if (bodyMatch) {
         const body = bodyMatch[1];
         // Split by comma but ignore commas inside parentheses (like DECIMAL(10,2))
         const lines = body.split(/,(?![^(]*\))/);
-        
+
         lines.forEach(line => {
           const trimmedLine = line.trim();
           // Skip constraints, keys, etc.
@@ -128,9 +182,9 @@ export default function SqlGenerator() {
     }
 
     const selectedFields = fields.filter(f => f.selected).map(f => `\`${f.name}\``);
-    
+
     let sql = "";
-    
+
     if (options.select) {
       sql += `SELECT ${selectedFields.length > 0 ? selectedFields.join(', ') : '*'} \nFROM \`${tableName}\``;
     }
@@ -189,11 +243,11 @@ export default function SqlGenerator() {
     if (isSelecting && selectionStartName !== null) {
       const startIndex = fields.findIndex(f => f.name === selectionStartName);
       const currentIndex = fields.findIndex(f => f.name === name);
-      
+
       const start = Math.min(startIndex, currentIndex);
       const end = Math.max(startIndex, currentIndex);
       const targetState = fields[startIndex].selected;
-      
+
       setFields(prev => prev.map((f, i) => {
         if (i >= start && i <= end) {
           return { ...f, selected: targetState };
@@ -224,6 +278,12 @@ export default function SqlGenerator() {
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const formatTime = (ts: number) => {
+    const d = new Date(ts);
+    const pad = (n: number) => String(n).padStart(2, "0");
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+  };
+
   return (
     <div className="max-w-6xl mx-auto pb-20">
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="mb-10 text-center lg:text-left">
@@ -250,7 +310,7 @@ export default function SqlGenerator() {
                 <RefreshCw className="w-4 h-4" />
               </button>
             </div>
-            
+
             <textarea
               value={inputSql}
               onChange={(e) => setInputSql(e.target.value)}
@@ -263,12 +323,12 @@ export default function SqlGenerator() {
             <h3 className="text-sm font-mono text-accent-emerald tracking-widest uppercase flex items-center gap-2 font-bold">
               <Settings className="w-4 h-4" /> 生成选项
             </h3>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <label className="flex items-center gap-2 cursor-pointer group">
-                <input 
-                  type="checkbox" 
-                  checked={options.select} 
+                <input
+                  type="checkbox"
+                  checked={options.select}
                   onChange={e => setOptions({...options, select: e.target.checked})}
                   className="hidden"
                 />
@@ -279,9 +339,9 @@ export default function SqlGenerator() {
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer group">
-                <input 
-                  type="checkbox" 
-                  checked={options.where} 
+                <input
+                  type="checkbox"
+                  checked={options.where}
                   onChange={e => setOptions({...options, where: e.target.checked})}
                   className="hidden"
                 />
@@ -292,9 +352,9 @@ export default function SqlGenerator() {
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer group">
-                <input 
-                  type="checkbox" 
-                  checked={options.orderBy} 
+                <input
+                  type="checkbox"
+                  checked={options.orderBy}
                   onChange={e => setOptions({...options, orderBy: e.target.checked})}
                   className="hidden"
                 />
@@ -305,9 +365,9 @@ export default function SqlGenerator() {
               </label>
 
               <label className="flex items-center gap-2 cursor-pointer group">
-                <input 
-                  type="checkbox" 
-                  checked={options.limit} 
+                <input
+                  type="checkbox"
+                  checked={options.limit}
                   onChange={e => setOptions({...options, limit: e.target.checked})}
                   className="hidden"
                 />
@@ -324,14 +384,14 @@ export default function SqlGenerator() {
                   <label className="text-[10px] text-white/40 uppercase font-bold tracking-wider ml-1 flex items-center gap-2">
                     <Filter className="w-3 h-3" /> WHERE 过滤配置
                   </label>
-                  <button 
+                  <button
                     onClick={addWhereFilter}
                     className="p-1 hover:bg-white/5 rounded text-accent-emerald transition-all"
                   >
                     <Plus className="w-4 h-4" />
                   </button>
                 </div>
-                
+
                 <div className="space-y-3">
                   {whereFilters.map((filter) => (
                     <div key={filter.id} className="flex gap-2 items-center">
@@ -344,7 +404,7 @@ export default function SqlGenerator() {
                           <option key={f.name} value={f.name} className="bg-[#050505]">{f.name}</option>
                         ))}
                       </select>
-                      
+
                       <select
                         value={filter.operator}
                         onChange={(e) => updateWhereFilter(filter.id, { operator: e.target.value })}
@@ -354,7 +414,7 @@ export default function SqlGenerator() {
                           <option key={op} value={op} className="bg-[#050505]">{op}</option>
                         ))}
                       </select>
-                      
+
                       <input
                         type="text"
                         value={filter.value}
@@ -362,8 +422,8 @@ export default function SqlGenerator() {
                         placeholder="值"
                         className="flex-1 bg-white/5 border border-white/10 rounded-lg px-2 py-1.5 text-white focus:outline-none focus:border-accent-emerald/50 text-xs"
                       />
-                      
-                      <button 
+
+                      <button
                         onClick={() => removeWhereFilter(filter.id)}
                         className="p-1 text-white/20 hover:text-red-400 transition-colors"
                       >
@@ -381,8 +441,8 @@ export default function SqlGenerator() {
             {options.limit && (
               <div className="space-y-2 pt-2 border-t border-white/5">
                 <label className="text-[10px] text-white/40 uppercase font-bold tracking-wider ml-1">Limit 数量</label>
-                <input 
-                  type="number" 
+                <input
+                  type="number"
                   value={options.limitValue}
                   onChange={e => setOptions({...options, limitValue: e.target.value})}
                   className="w-full bg-white/5 border border-white/10 rounded-lg px-3 py-1.5 text-white focus:outline-none focus:border-accent-emerald/50 text-sm"
@@ -399,7 +459,7 @@ export default function SqlGenerator() {
               <h3 className="text-sm font-mono text-accent-emerald tracking-widest uppercase flex items-center gap-2 font-bold">
                 <ListChecks className="w-4 h-4" /> 字段选择 {fields.length > 0 && `(${fields.filter(f => f.selected).length}/${fields.length})`}
               </h3>
-              
+
               <div className="flex flex-1 w-full md:w-auto items-center gap-3">
                 <div className="relative flex-1 max-w-[200px]">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
@@ -424,7 +484,7 @@ export default function SqlGenerator() {
                   <MousePointer2 className="w-3 h-3" />
                   <span>支持鼠标拖拽快速圈选字段</span>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-2 max-h-[400px] overflow-y-auto pr-2 custom-scrollbar select-none">
                   {filteredFields.map((field, index) => (
                     <motion.div
@@ -436,8 +496,8 @@ export default function SqlGenerator() {
                       onMouseEnter={() => handleMouseEnter(field.name)}
                       className={cn(
                         "flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all duration-300 group",
-                        field.selected 
-                          ? "bg-accent-emerald/10 border-accent-emerald/30" 
+                        field.selected
+                          ? "bg-accent-emerald/10 border-accent-emerald/30"
                           : "bg-white/5 border-white/5 hover:border-white/10"
                       )}
                     >
@@ -474,24 +534,34 @@ export default function SqlGenerator() {
             )}
           </div>
 
-          <div className="glass-card p-6 flex flex-col border-accent-emerald/20">
+          <div id="sql-preview" className="glass-card p-6 flex flex-col border-accent-emerald/20">
             <div className="flex justify-between items-center mb-6">
               <h3 className="text-sm font-mono text-accent-emerald tracking-widest uppercase flex items-center gap-2 font-bold">
                 <Terminal className="w-4 h-4" /> SQL 预览
               </h3>
-              <button 
-                onClick={copyToClipboard}
-                disabled={!generatedSql}
-                className={cn(
-                  "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
-                  copied ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20 hover:bg-accent-emerald/20"
-                )}
-              >
-                {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? "已复制" : "点击复制"}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={saveToHistory}
+                  disabled={!generatedSql || !tableName}
+                  className="flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300 bg-accent-violet/10 text-accent-violet border border-accent-violet/20 hover:bg-accent-violet/20 disabled:opacity-30 disabled:cursor-not-allowed"
+                >
+                  <Save className="w-4 h-4" />
+                  保存到历史
+                </button>
+                <button
+                  onClick={copyToClipboard}
+                  disabled={!generatedSql}
+                  className={cn(
+                    "flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all duration-300",
+                    copied ? "bg-green-500/20 text-green-400 border border-green-500/30" : "bg-accent-emerald/10 text-accent-emerald border border-accent-emerald/20 hover:bg-accent-emerald/20"
+                  )}
+                >
+                  {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+                  {copied ? "已复制" : "点击复制"}
+                </button>
+              </div>
             </div>
-            
+
             <div className="bg-black/60 rounded-2xl p-6 font-mono text-sm leading-relaxed border border-white/5 min-h-[120px] relative group overflow-hidden">
               <div className="absolute top-4 left-4 flex gap-2">
                 <div className="w-3 h-3 rounded-full bg-red-500/40" />
@@ -514,6 +584,210 @@ export default function SqlGenerator() {
               <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-accent-emerald/5 blur-3xl rounded-full" />
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* History & Favorites Panel */}
+      <div className="mt-12">
+        <div className="glass-card p-6">
+          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => setShowHistory(!showHistory)}
+                className={cn(
+                  "flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold transition-all duration-300",
+                  showHistory
+                    ? "bg-accent-violet/20 text-accent-violet border border-accent-violet/30"
+                    : "bg-white/5 text-white/50 border border-white/10 hover:text-white/70"
+                )}
+              >
+                <History className="w-4 h-4" />
+                历史记录
+                {records.length > 0 && (
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-white/10">
+                    {records.length}
+                  </span>
+                )}
+              </button>
+
+              {showHistory && (
+                <div className="flex gap-1 p-1 bg-white/5 rounded-lg">
+                  <button
+                    onClick={() => setHistoryFilter("all")}
+                    className={cn(
+                      "px-3 py-1 rounded-md text-xs font-bold transition-all",
+                      historyFilter === "all"
+                        ? "bg-white/10 text-white"
+                        : "text-white/40 hover:text-white/70"
+                    )}
+                  >
+                    全部
+                  </button>
+                  <button
+                    onClick={() => setHistoryFilter("favorites")}
+                    className={cn(
+                      "flex items-center gap-1 px-3 py-1 rounded-md text-xs font-bold transition-all",
+                      historyFilter === "favorites"
+                        ? "bg-white/10 text-white"
+                        : "text-white/40 hover:text-white/70"
+                    )}
+                  >
+                    <Star className="w-3 h-3" />
+                    收藏
+                    {favorites.length > 0 && (
+                      <span className="text-[10px]">({favorites.length})</span>
+                    )}
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {showHistory && records.length > 0 && (
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3 h-3 text-white/20" />
+                  <input
+                    type="text"
+                    value={historySearch}
+                    onChange={(e) => setHistorySearch(e.target.value)}
+                    placeholder="搜索历史..."
+                    className="w-[180px] bg-white/5 border border-white/10 rounded-lg pl-9 pr-3 py-1.5 text-xs text-white focus:outline-none focus:border-accent-violet/50 transition-all"
+                  />
+                </div>
+                <button
+                  onClick={clearHistory}
+                  className="text-[10px] text-white/20 hover:text-red-400 transition-colors uppercase font-bold flex items-center gap-1"
+                >
+                  <Trash2 className="w-3 h-3" /> 清空全部
+                </button>
+              </div>
+            )}
+          </div>
+
+          <AnimatePresence>
+            {showHistory && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3 }}
+                className="overflow-hidden"
+              >
+                {displayedRecords.length > 0 ? (
+                  <div className="space-y-3 max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+                    {displayedRecords.map((record) => (
+                      <motion.div
+                        key={record.id}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="group flex items-start gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:border-white/10 transition-all duration-300"
+                      >
+                        {/* Favorite toggle */}
+                        <button
+                          onClick={() => toggleFavorite(record.id)}
+                          className={cn(
+                            "mt-0.5 shrink-0 transition-all duration-300",
+                            record.isFavorite
+                              ? "text-amber-400 hover:text-amber-300"
+                              : "text-white/15 hover:text-amber-400/60"
+                          )}
+                        >
+                          <Star className={cn("w-4 h-4", record.isFavorite && "fill-current")} />
+                        </button>
+
+                        {/* Content */}
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1.5">
+                            <span className="text-xs font-mono text-accent-emerald font-bold">
+                              {record.tableName}
+                            </span>
+                            <span className="text-[10px] text-white/20">
+                              {formatTime(record.createdAt)}
+                            </span>
+
+                            {/* Editable label */}
+                            {editingLabel === record.id ? (
+                              <div className="flex items-center gap-1">
+                                <input
+                                  type="text"
+                                  value={editLabelValue}
+                                  onChange={(e) => setEditLabelValue(e.target.value)}
+                                  onKeyDown={(e) => {
+                                    if (e.key === "Enter") submitLabel(record.id);
+                                    if (e.key === "Escape") setEditingLabel(null);
+                                  }}
+                                  placeholder="标签名..."
+                                  className="w-24 bg-white/10 border border-accent-violet/30 rounded px-2 py-0.5 text-xs text-white focus:outline-none"
+                                  autoFocus
+                                />
+                                <button
+                                  onClick={() => submitLabel(record.id)}
+                                  className="text-[10px] text-accent-violet hover:underline"
+                                >
+                                  保存
+                                </button>
+                              </div>
+                            ) : (
+                              <button
+                                onClick={() => handleEditLabel(record.id, record.label)}
+                                className={cn(
+                                  "text-[10px] px-2 py-0.5 rounded transition-all",
+                                  record.label
+                                    ? "bg-accent-violet/10 text-accent-violet/70 hover:text-accent-violet"
+                                    : "text-white/15 hover:text-white/40 italic"
+                                )}
+                              >
+                                {record.label || "+ 添加标签"}
+                              </button>
+                            )}
+                          </div>
+
+                          <pre className="text-xs font-mono text-white/60 whitespace-pre-wrap break-all line-clamp-2 mb-2">
+                            {record.sql}
+                          </pre>
+
+                          {/* Actions */}
+                          <div className="flex items-center gap-3">
+                            <button
+                              onClick={() => loadFromHistory(record)}
+                              className="text-[10px] text-accent-violet/60 hover:text-accent-violet transition-colors uppercase font-bold flex items-center gap-1"
+                            >
+                              加载查看
+                            </button>
+                            <button
+                              onClick={() => copyHistorySql(record.sql)}
+                              className="text-[10px] text-accent-emerald/60 hover:text-accent-emerald transition-colors uppercase font-bold flex items-center gap-1"
+                            >
+                              <Copy className="w-3 h-3" /> 复制
+                            </button>
+                            <button
+                              onClick={() => deleteRecord(record.id)}
+                              className="text-[10px] text-white/20 hover:text-red-400 transition-colors uppercase font-bold flex items-center gap-1 ml-auto"
+                            >
+                              <Trash2 className="w-3 h-3" /> 删除
+                            </button>
+                          </div>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-16 text-white/10">
+                    <History className="w-12 h-12 mb-4 opacity-20" />
+                    <p className="text-sm font-mono italic">
+                      {historyFilter === "favorites"
+                        ? historySearch
+                          ? "没有匹配的收藏记录"
+                          : "暂无收藏的 SQL，点击 ⭐ 收藏常用查询"
+                        : historySearch
+                          ? "没有匹配的历史记录"
+                          : "暂无生成历史，生成 SQL 后点击「保存到历史」"}
+                    </p>
+                  </div>
+                )}
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
     </div>
