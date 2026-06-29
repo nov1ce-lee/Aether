@@ -74,7 +74,7 @@ export default function CaseConverter() {
           <div className="p-3 bg-accent-violet/10 rounded-2xl">
             <Boxes className="text-accent-violet w-10 h-10" />
           </div>
-          变量命名转换器
+          变量命名转换
         </h2>
         <p className="text-white/40 text-lg max-w-2xl">
           在各种编程命名规范间自由切换，支持批量词组识别

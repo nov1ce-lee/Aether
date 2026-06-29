@@ -10,7 +10,7 @@ export default function Home() {
       <motion.div
         initial={{ opacity: 0, scale: 0.9 }}
         animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+        transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
         className="relative mb-8"
       >
         <div className="absolute -inset-4 bg-gradient-to-r from-accent-cyan via-accent-violet to-accent-rose rounded-full blur-3xl opacity-10 animate-pulse" />
@@ -22,7 +22,7 @@ export default function Home() {
       <motion.p
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.4, duration: 1, ease: "easeOut" }}
+        transition={{ delay: 0.1, duration: 0.5, ease: "easeOut" }}
         className="text-xl md:text-2xl text-white/40 max-w-2xl font-medium tracking-tight mb-16"
       >
         简单、实用的开发者工具集合
@@ -31,7 +31,7 @@ export default function Home() {
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ delay: 0.6, duration: 0.8 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
         className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full max-w-6xl px-4"
       >
         <ToolCard
@@ -59,8 +59,8 @@ export default function Home() {
           href="/timestamp"
           icon={<Clock className="w-7 h-7" />}
           title="时间戳转换"
-          description={"Unix 时间戳与 UTC 时间\n互相转换，快捷方便"}
-          color="cyan"
+          description={"Unix 时间戳与时区时间\n互相转换，支持全球时区"}
+          color="indigo"
         />
         <ToolCard
           href="/git-scribe"
@@ -81,49 +81,50 @@ export default function Home() {
   );
 }
 
-function ToolCard({ 
-  href, 
-  icon, 
-  title, 
-  description, 
-  color, 
-  disabled = false 
-}: { 
-  href: string; 
-  icon: React.ReactNode; 
-  title: string; 
-  description: string; 
-  color: 'cyan' | 'violet' | 'emerald' | 'amber' | 'rose';
+function ToolCard({
+  href,
+  icon,
+  title,
+  description,
+  color,
+  disabled = false
+}: {
+  href: string;
+  icon: React.ReactNode;
+  title: string;
+  description: string;
+  color: 'cyan' | 'violet' | 'emerald' | 'amber' | 'rose' | 'indigo';
   disabled?: boolean;
 }) {
   const colorMap = {
     cyan: 'text-accent-cyan border-accent-cyan/20 group-hover:border-accent-cyan/50',
+    indigo: 'text-accent-indigo border-accent-indigo/20 group-hover:border-accent-indigo/50',
     violet: 'text-accent-violet border-accent-violet/20 group-hover:border-accent-violet/50',
     emerald: 'text-accent-emerald border-accent-emerald/20 group-hover:border-accent-emerald/50',
     amber: 'text-accent-amber border-accent-amber/20 group-hover:border-accent-amber/50',
     rose: 'text-accent-rose border-accent-rose/20 group-hover:border-accent-rose/50',
   };
-  
+
   const iconColorClass = colorMap[color].split(' ')[0];
   const borderColorClass = colorMap[color].split(' ').slice(1).join(' ');
-  
+
   return (
-    <Link 
+    <Link
       href={disabled ? "#" : href}
-      className={`group relative glass-card p-8 rounded-[2rem] transition-all duration-500 overflow-hidden border-2 ${disabled ? 'opacity-50 cursor-not-allowed' : `hover:scale-[1.03] hover:bg-white/[0.07] ${borderColorClass}`}`}
+      className={`group relative glass-card p-8 rounded-[2rem] transition-all duration-300 overflow-hidden border-2 ${disabled ? 'opacity-50 cursor-not-allowed' : `hover:scale-[1.03] hover:bg-white/[0.07] ${borderColorClass}`}`}
     >
-      <div className={`mb-6 ${iconColorClass} group-hover:scale-110 transition-transform duration-500 ease-out`}>
+      <div className={`mb-6 ${iconColorClass} group-hover:scale-110 transition-transform duration-300 ease-out`}>
         {icon}
       </div>
-      <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-glow transition-all duration-300">
+      <h3 className="text-2xl font-black text-white mb-3 tracking-tight group-hover:text-glow transition-all duration-200">
         {title}
       </h3>
-      <p className="text-white/40 text-base leading-relaxed whitespace-pre-line font-medium group-hover:text-white/60 transition-colors duration-300">
+      <p className="text-white/40 text-base leading-relaxed whitespace-pre-line font-medium group-hover:text-white/60 transition-colors duration-200">
         {description}
       </p>
-      
+
       {!disabled && (
-        <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-500">
+        <div className="absolute bottom-8 right-8 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300">
           <ArrowRight className={`w-6 h-6 ${iconColorClass}`} />
         </div>
       )}
@@ -133,9 +134,9 @@ function ToolCard({
           Coming Soon
         </div>
       )}
-      
+
       {/* Subtle glow effect on hover */}
-      <div className={`absolute -inset-20 bg-gradient-to-br from-transparent via-transparent to-${color === 'cyan' ? 'accent-cyan' : color === 'violet' ? 'accent-violet' : color === 'emerald' ? 'accent-emerald' : color === 'amber' ? 'accent-amber' : 'accent-rose'}/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none`} />
+      <div className={`absolute -inset-20 bg-gradient-to-br from-transparent via-transparent to-${color === 'cyan' ? 'accent-cyan' : color === 'indigo' ? 'accent-indigo' : color === 'violet' ? 'accent-violet' : color === 'emerald' ? 'accent-emerald' : color === 'amber' ? 'accent-amber' : 'accent-rose'}/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`} />
     </Link>
   );
 }

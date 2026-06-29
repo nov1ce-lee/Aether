@@ -1,14 +1,46 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  Clock, Copy, Check, RefreshCw, ArrowRight, ArrowLeft,
-  Info, Terminal, Globe, Calendar, Hash
+  Clock, Copy, Check, RefreshCw, ArrowRight,
+  Info, Terminal, Globe, Calendar, Hash, MapPin
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-type ConversionMode = "ts-to-utc" | "utc-to-ts";
+// Timezone data: offset in hours, label, regions
+const TIMEZONES = [
+  { offset: -12, label: "UTC-12", regions: "美国贝克岛" },
+  { offset: -11, label: "UTC-11", regions: "美属萨摩亚、纽埃" },
+  { offset: -10, label: "UTC-10", regions: "美国夏威夷、法属波利尼西亚" },
+  { offset: -9, label: "UTC-9", regions: "美国阿拉斯加(部分)" },
+  { offset: -8, label: "UTC-8", regions: "美国洛杉矶、加拿大温哥华" },
+  { offset: -7, label: "UTC-7", regions: "美国丹佛、加拿大卡尔加里" },
+  { offset: -6, label: "UTC-6", regions: "墨西哥城、美国芝加哥" },
+  { offset: -5, label: "UTC-5", regions: "美国纽约、加拿大渥太华、秘鲁" },
+  { offset: -4, label: "UTC-4", regions: "智利、委内瑞拉、加拿大大西洋" },
+  { offset: -3, label: "UTC-3", regions: "巴西、阿根廷、格陵兰" },
+  { offset: -2, label: "UTC-2", regions: "南乔治亚岛" },
+  { offset: -1, label: "UTC-1", regions: "亚速尔群岛、佛得角" },
+  { offset: 0, label: "UTC+0", regions: "英国伦敦、葡萄牙、冰岛" },
+  { offset: 1, label: "UTC+1", regions: "法国巴黎、德国柏林、意大利罗马" },
+  { offset: 2, label: "UTC+2", regions: "希腊雅典、芬兰、南非、以色列" },
+  { offset: 3, label: "UTC+3", regions: "俄罗斯莫斯科、沙特阿拉伯、肯尼亚" },
+  { offset: 4, label: "UTC+4", regions: "阿联酋迪拜、阿塞拜疆" },
+  { offset: 5, label: "UTC+5", regions: "巴基斯坦、马尔代夫" },
+  { offset: 5.5, label: "UTC+5:30", regions: "印度" },
+  { offset: 6, label: "UTC+6", regions: "孟加拉国、哈萨克斯坦(东部)" },
+  { offset: 7, label: "UTC+7", regions: "泰国、越南、印尼雅加达" },
+  { offset: 8, label: "UTC+8", regions: "中国、新加坡、马来西亚、菲律宾" },
+  { offset: 9, label: "UTC+9", regions: "日本、韩国" },
+  { offset: 9.5, label: "UTC+9:30", regions: "澳大利亚达尔文" },
+  { offset: 10, label: "UTC+10", regions: "澳大利亚悉尼、巴布亚新几内亚" },
+  { offset: 11, label: "UTC+11", regions: "所罗门群岛、瓦努阿图" },
+  { offset: 12, label: "UTC+12", regions: "新西兰、斐济" },
+  { offset: 13, label: "UTC+13", regions: "汤加、萨摩亚" },
+];
+
+type ConversionMode = "ts-to-datetime" | "datetime-to-ts";
 
 interface FormatOutput {
   label: string;
@@ -17,14 +49,16 @@ interface FormatOutput {
 }
 
 export default function TimestampConverter() {
-  const [mode, setMode] = useState<ConversionMode>("ts-to-utc");
+  const [mode, setMode] = useState<ConversionMode>("ts-to-datetime");
   const [tsInput, setTsInput] = useState("");
   const [tsUnit, setTsUnit] = useState<"seconds" | "milliseconds">("seconds");
-  const [utcInput, setUtcInput] = useState("");
+  const [datetimeInput, setDatetimeInput] = useState("");
+  const [timezoneOffset, setTimezoneOffset] = useState(8); // Default UTC+8 (China)
   const [outputs, setOutputs] = useState<FormatOutput[]>([]);
   const [error, setError] = useState("");
   const [nowTs, setNowTs] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [expandedTz, setExpandedTz] = useState(false);
 
   // Update "now" timestamp every second
   useEffect(() => {
@@ -36,37 +70,57 @@ export default function TimestampConverter() {
     return () => clearInterval(interval);
   }, []);
 
-  // Format a Date object into multiple UTC string formats
-  const formatUtcOutputs = useCallback((date: Date): FormatOutput[] => {
+  // When unit changes, convert the input value
+  const prevUnit = useRef(tsUnit);
+  useEffect(() => {
+    if (tsUnit === prevUnit.current) return;
+    const old = prevUnit.current;
+    prevUnit.current = tsUnit;
+
+    if (!tsInput.trim()) return;
+    const numVal = parseFloat(tsInput);
+    if (isNaN(numVal)) return;
+
+    if (old === "seconds" && tsUnit === "milliseconds") {
+      setTsInput((numVal * 1000).toString());
+    } else if (old === "milliseconds" && tsUnit === "seconds") {
+      setTsInput(Math.floor(numVal / 1000).toString());
+    }
+  }, [tsUnit]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const selectedTz = useMemo(() => TIMEZONES.find(tz => tz.offset === timezoneOffset) || TIMEZONES[0], [timezoneOffset]);
+
+  // Convert a Date to the selected timezone and format
+  const formatDatetimeOutputs = useCallback((date: Date): FormatOutput[] => {
     const pad = (n: number) => String(n).padStart(2, "0");
-    const year = date.getUTCFullYear();
-    const month = pad(date.getUTCMonth() + 1);
-    const day = pad(date.getUTCDate());
-    const hours = pad(date.getUTCHours());
-    const minutes = pad(date.getUTCMinutes());
-    const seconds = pad(date.getUTCSeconds());
+    const offsetMs = timezoneOffset * 60 * 60 * 1000;
+    const localDate = new Date(date.getTime() + offsetMs);
+
+    const year = localDate.getUTCFullYear();
+    const month = pad(localDate.getUTCMonth() + 1);
+    const day = pad(localDate.getUTCDate());
+    const hours = pad(localDate.getUTCHours());
+    const minutes = pad(localDate.getUTCMinutes());
+    const seconds = pad(localDate.getUTCSeconds());
     const ms = String(date.getUTCMilliseconds()).padStart(3, "0");
 
     const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
     const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-    const dayName = days[date.getUTCDay()];
-    const monthName = months[date.getUTCMonth()];
+    const dayName = days[localDate.getUTCDay()];
+    const monthName = months[localDate.getUTCMonth()];
+
+    const tzLabel = selectedTz.label.replace("UTC", "");
 
     return [
       {
+        label: "完整格式",
+        value: `${year}-${month}-${day} ${hours}:${minutes}:${seconds} ${selectedTz.label}`,
+        description: `${selectedTz.regions}`,
+      },
+      {
         label: "ISO 8601",
-        value: `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}Z`,
+        value: `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${ms}${tzLabel}`,
         description: "国际标准格式",
-      },
-      {
-        label: "RFC 2822",
-        value: `${dayName}, ${day} ${monthName} ${year} ${hours}:${minutes}:${seconds} +0000`,
-        description: "邮件/HTTP 头部格式",
-      },
-      {
-        label: "可读格式",
-        value: `${year}-${month}-${day} ${hours}:${minutes}:${seconds} UTC`,
-        description: "便于阅读的格式",
       },
       {
         label: "日期简写",
@@ -76,14 +130,19 @@ export default function TimestampConverter() {
       {
         label: "时间简写",
         value: `${hours}:${minutes}:${seconds}`,
-        description: "仅时间部分 (UTC)",
+        description: "仅时间部分",
+      },
+      {
+        label: "UTC 时间",
+        value: `${pad(date.getUTCFullYear())}-${pad(date.getUTCMonth() + 1)}-${pad(date.getUTCDate())} ${pad(date.getUTCHours())}:${pad(date.getUTCMinutes())}:${pad(date.getUTCSeconds())} UTC+0`,
+        description: "UTC 零时区参考",
       },
     ];
-  }, []);
+  }, [timezoneOffset, selectedTz]);
 
-  // Timestamp → UTC
+  // Timestamp → Datetime
   useEffect(() => {
-    if (mode !== "ts-to-utc") return;
+    if (mode !== "ts-to-datetime") return;
     setError("");
 
     if (!tsInput.trim()) {
@@ -92,7 +151,6 @@ export default function TimestampConverter() {
     }
 
     const raw = tsInput.trim();
-    // Check if it's a valid number (allow scientific notation)
     if (!/^-?\d+(\.\d+)?$/.test(raw)) {
       setError("请输入有效的数字时间戳");
       setOutputs([]);
@@ -111,27 +169,29 @@ export default function TimestampConverter() {
     try {
       const date = new Date(ms);
       if (isNaN(date.getTime())) throw new Error();
-      setOutputs(formatUtcOutputs(date));
+      setOutputs(formatDatetimeOutputs(date));
     } catch {
       setError("无法解析该时间戳");
       setOutputs([]);
     }
-  }, [tsInput, tsUnit, mode, formatUtcOutputs]);
+  }, [tsInput, tsUnit, mode, timezoneOffset, formatDatetimeOutputs]);
 
-  // UTC → Timestamp
-  const handleUtcConvert = useCallback(() => {
+  // Datetime → Timestamp
+  const handleDatetimeConvert = useCallback(() => {
     setError("");
-    if (!utcInput.trim()) {
+    if (!datetimeInput.trim()) {
       setOutputs([]);
       return;
     }
 
     try {
-      // Try parsing as ISO format or common date strings
-      const date = new Date(utcInput.trim());
+      const date = new Date(datetimeInput.trim());
       if (isNaN(date.getTime())) throw new Error();
 
-      const tsMs = date.getTime();
+      // Account for the selected timezone offset — the parsed date is treated as UTC by JS
+      const offsetMs = timezoneOffset * 60 * 60 * 1000;
+      const utcMs = date.getTime() - offsetMs;
+      const tsMs = utcMs;
       const tsSec = Math.floor(tsMs / 1000);
 
       setOutputs([
@@ -147,16 +207,16 @@ export default function TimestampConverter() {
         },
       ]);
     } catch {
-      setError("无法解析该日期时间字符串，请尝试 ISO 8601 格式 (如 2024-01-15T08:30:00Z)");
+      setError("无法解析该日期时间字符串，请使用 ISO 8601 或常用格式");
       setOutputs([]);
     }
-  }, [utcInput]);
+  }, [datetimeInput, timezoneOffset]);
 
   useEffect(() => {
-    if (mode === "utc-to-ts") {
-      handleUtcConvert();
+    if (mode === "datetime-to-ts") {
+      handleDatetimeConvert();
     }
-  }, [utcInput, mode, handleUtcConvert]);
+  }, [datetimeInput, mode, handleDatetimeConvert]);
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -168,23 +228,33 @@ export default function TimestampConverter() {
     setTsInput(tsUnit === "seconds" ? nowTs : (parseInt(nowTs) * 1000).toString());
   };
 
-  const fillCurrentUtc = () => {
-    setUtcInput(new Date().toISOString());
+  const fillCurrentDatetime = () => {
+    setDatetimeInput(new Date().toISOString().replace("Z", ""));
   };
 
   const clearAll = () => {
     setTsInput("");
-    setUtcInput("");
+    setDatetimeInput("");
     setOutputs([]);
     setError("");
   };
 
   const switchMode = () => {
-    setMode(mode === "ts-to-utc" ? "utc-to-ts" : "ts-to-utc");
+    setMode(mode === "ts-to-datetime" ? "datetime-to-ts" : "ts-to-datetime");
     setTsInput("");
-    setUtcInput("");
+    setDatetimeInput("");
     setOutputs([]);
     setError("");
+  };
+
+  // Format the offset display nicely
+  const formatOffset = (offset: number) => {
+    if (offset === 0) return "UTC+0";
+    const sign = offset > 0 ? "+" : "";
+    const hours = Math.floor(Math.abs(offset));
+    const mins = Math.abs(offset) % 1;
+    if (mins === 0.5) return `UTC${sign}${hours}:30`;
+    return `UTC${sign}${hours}`;
   };
 
   return (
@@ -195,13 +265,13 @@ export default function TimestampConverter() {
         className="mb-10 text-center lg:text-left"
       >
         <h2 className="text-5xl font-black mb-4 flex items-center justify-center lg:justify-start gap-4">
-          <div className="p-3 bg-accent-cyan/10 rounded-2xl">
-            <Clock className="text-accent-cyan w-10 h-10" />
+          <div className="p-3 bg-accent-indigo/10 rounded-2xl">
+            <Clock className="text-accent-indigo w-10 h-10" />
           </div>
           时间戳转换
         </h2>
         <p className="text-white/40 text-lg max-w-2xl">
-          在 Unix 时间戳与 UTC 日期时间之间自由转换
+          Unix 时间戳与全球时区时间互转，支持秒/毫秒切换
         </p>
       </motion.div>
 
@@ -210,39 +280,97 @@ export default function TimestampConverter() {
         <div className="lg:col-span-5 space-y-6">
           {/* Mode Switcher */}
           <div className="glass-card p-4">
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <button
-                onClick={() => setMode("ts-to-utc")}
+                onClick={() => setMode("ts-to-datetime")}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300",
-                  mode === "ts-to-utc"
-                    ? "bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30 shadow-lg"
+                  mode === "ts-to-datetime"
+                    ? "bg-accent-indigo/20 text-accent-indigo border border-accent-indigo/30 shadow-lg"
                     : "bg-white/5 text-white/40 border border-white/10 hover:text-white/60"
                 )}
               >
                 <Hash className="w-4 h-4" />
-                时间戳 → UTC
+                时间戳 → 日期
               </button>
               <button
                 onClick={switchMode}
-                className="p-2.5 rounded-lg bg-white/5 text-white/30 hover:text-white/50 transition-all"
+                className="p-2.5 rounded-lg bg-white/5 text-white/30 hover:text-white/50 transition-all shrink-0"
                 title="切换方向"
               >
                 <ArrowRight className="w-4 h-4" />
               </button>
               <button
-                onClick={() => setMode("utc-to-ts")}
+                onClick={() => setMode("datetime-to-ts")}
                 className={cn(
                   "flex-1 flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-bold transition-all duration-300",
-                  mode === "utc-to-ts"
-                    ? "bg-accent-cyan/20 text-accent-cyan border border-accent-cyan/30 shadow-lg"
+                  mode === "datetime-to-ts"
+                    ? "bg-accent-indigo/20 text-accent-indigo border border-accent-indigo/30 shadow-lg"
                     : "bg-white/5 text-white/40 border border-white/10 hover:text-white/60"
                 )}
               >
                 <Globe className="w-4 h-4" />
-                UTC → 时间戳
+                日期 → 时间戳
               </button>
             </div>
+          </div>
+
+          {/* Timezone Selector */}
+          <div className="glass-card p-5 space-y-3 border-accent-indigo/10">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-mono text-accent-indigo tracking-widest uppercase flex items-center gap-2 font-bold">
+                <MapPin className="w-4 h-4" /> 目标时区
+              </h3>
+              <button
+                onClick={() => setExpandedTz(!expandedTz)}
+                className="text-[10px] text-accent-indigo/60 hover:text-accent-indigo transition-colors uppercase font-bold"
+              >
+                {expandedTz ? "收起" : "展开全部"}
+              </button>
+            </div>
+
+            {/* Current selection */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-accent-indigo/10 border border-accent-indigo/20">
+              <span className="text-base font-mono text-accent-indigo font-bold">
+                {selectedTz.label}
+              </span>
+              <span className="text-xs text-white/50">
+                {selectedTz.regions}
+              </span>
+            </div>
+
+            {/* Expanded timezone grid */}
+            <AnimatePresence>
+              {expandedTz && (
+                <motion.div
+                  initial={{ height: 0, opacity: 0 }}
+                  animate={{ height: "auto", opacity: 1 }}
+                  exit={{ height: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                  className="overflow-hidden"
+                >
+                  <div className="grid grid-cols-2 gap-1.5 max-h-[260px] overflow-y-auto pr-1 custom-scrollbar pt-2">
+                    {TIMEZONES.map((tz) => (
+                      <button
+                        key={tz.offset}
+                        onClick={() => { setTimezoneOffset(tz.offset); setExpandedTz(false); }}
+                        className={cn(
+                          "text-left px-3 py-2 rounded-lg text-xs transition-all",
+                          timezoneOffset === tz.offset
+                            ? "bg-accent-indigo/20 text-accent-indigo border border-accent-indigo/30 font-bold"
+                            : "text-white/40 hover:text-white/70 hover:bg-white/5 border border-transparent"
+                        )}
+                      >
+                        <span className="font-mono">{tz.label}</span>
+                        <span className="ml-2 text-[10px] text-white/20 truncate block">
+                          {tz.regions}
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <AnimatePresence mode="wait">
@@ -253,17 +381,17 @@ export default function TimestampConverter() {
               exit={{ opacity: 0, x: 20 }}
               transition={{ duration: 0.3 }}
             >
-              {/* Mode: Timestamp → UTC */}
-              {mode === "ts-to-utc" && (
+              {/* Mode: Timestamp → Datetime */}
+              {mode === "ts-to-datetime" && (
                 <div className="glass-card p-6 space-y-6">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2 font-bold">
+                    <h3 className="text-sm font-mono text-accent-indigo tracking-widest uppercase flex items-center gap-2 font-bold">
                       <Hash className="w-4 h-4" /> 输入时间戳
                     </h3>
                     <div className="flex gap-2">
                       <button
                         onClick={fillCurrentTs}
-                        className="text-[10px] text-accent-cyan/70 hover:text-accent-cyan transition-colors uppercase font-bold"
+                        className="text-[10px] text-accent-indigo/70 hover:text-accent-indigo transition-colors uppercase font-bold"
                       >
                         填入当前
                       </button>
@@ -282,8 +410,8 @@ export default function TimestampConverter() {
                       type="text"
                       value={tsInput}
                       onChange={(e) => setTsInput(e.target.value)}
-                      placeholder={nowTs}
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-lg font-mono"
+                      placeholder={tsUnit === "seconds" ? nowTs : (parseInt(nowTs || "0") * 1000).toString()}
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-indigo/50 transition-all text-lg font-mono"
                     />
                   </div>
 
@@ -295,51 +423,40 @@ export default function TimestampConverter() {
                         className={cn(
                           "flex-1 py-2 rounded-lg text-xs font-bold border transition-all",
                           tsUnit === "seconds"
-                            ? "bg-accent-cyan/20 border-accent-cyan/50 text-white"
+                            ? "bg-accent-indigo/20 border-accent-indigo/50 text-white"
                             : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
                         )}
                       >
-                        秒 (10位)
+                        秒（10 位）
                       </button>
                       <button
                         onClick={() => setTsUnit("milliseconds")}
                         className={cn(
                           "flex-1 py-2 rounded-lg text-xs font-bold border transition-all",
                           tsUnit === "milliseconds"
-                            ? "bg-accent-cyan/20 border-accent-cyan/50 text-white"
+                            ? "bg-accent-indigo/20 border-accent-indigo/50 text-white"
                             : "bg-white/5 border-white/10 text-white/40 hover:border-white/20"
                         )}
                       >
-                        毫秒 (13位)
+                        毫秒（13 位）
                       </button>
                     </div>
                   </div>
 
-                  {/* Live now display */}
-                  <div className="flex items-center gap-2 px-4 py-3 rounded-xl bg-white/5 border border-white/10">
-                    <Clock className="w-4 h-4 text-accent-cyan/60" />
-                    <span className="text-sm text-white/40 font-mono">
-                      当前时间戳：
-                    </span>
-                    <span className="text-sm text-accent-cyan font-mono font-bold">
-                      {nowTs}
-                    </span>
-                    <span className="text-xs text-white/20">(秒)</span>
-                  </div>
                 </div>
               )}
 
-              {/* Mode: UTC → Timestamp */}
-              {mode === "utc-to-ts" && (
+              {/* Mode: Datetime → Timestamp */}
+              {mode === "datetime-to-ts" && (
                 <div className="glass-card p-6 space-y-6">
                   <div className="flex justify-between items-center">
-                    <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase flex items-center gap-2 font-bold">
-                      <Globe className="w-4 h-4" /> 输入 UTC 时间
+                    <h3 className="text-sm font-mono text-accent-indigo tracking-widest uppercase flex items-center gap-2 font-bold">
+                      <Globe className="w-4 h-4" /> 输入日期时间
                     </h3>
                     <div className="flex gap-2">
                       <button
-                        onClick={fillCurrentUtc}
-                        className="text-[10px] text-accent-cyan/70 hover:text-accent-cyan transition-colors uppercase font-bold"
+                        onClick={fillCurrentDatetime}
+                        className="text-[10px] text-accent-indigo/70 hover:text-accent-indigo transition-colors uppercase font-bold"
                       >
                         填入当前
                       </button>
@@ -353,13 +470,15 @@ export default function TimestampConverter() {
                   </div>
 
                   <div className="space-y-2">
-                    <label className="text-xs text-white/40 uppercase ml-1">日期时间字符串</label>
+                    <label className="text-xs text-white/40 uppercase ml-1">
+                      日期时间字符串（{selectedTz.label}）
+                    </label>
                     <input
                       type="text"
-                      value={utcInput}
-                      onChange={(e) => setUtcInput(e.target.value)}
-                      placeholder="例如: 2024-01-15T08:30:00Z"
-                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-cyan/50 transition-all text-lg font-mono"
+                      value={datetimeInput}
+                      onChange={(e) => setDatetimeInput(e.target.value)}
+                      placeholder="例如: 2024-01-15 08:30:00"
+                      className="w-full bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-accent-indigo/50 transition-all text-lg font-mono"
                     />
                   </div>
 
@@ -368,10 +487,10 @@ export default function TimestampConverter() {
                       <Info className="w-3 h-3" /> 支持的格式
                     </h4>
                     <ul className="space-y-1 text-[11px] text-white/30 leading-relaxed">
-                      <li>• ISO 8601: 2024-01-15T08:30:00Z</li>
-                      <li>• 完整日期: 2024-01-15 08:30:00</li>
-                      <li>• RFC 2822: Mon, 15 Jan 2024 08:30:00 GMT</li>
-                      <li>• 简写: 2024-01-15 (默认为 UTC 00:00)</li>
+                      <li>• 完整格式: 2024-01-15 08:30:00</li>
+                      <li>• ISO 8601: 2024-01-15T08:30:00</li>
+                      <li>• 简写: 2024-01-15（默认 00:00）</li>
+                      <li className="text-accent-indigo/40">• 输入时间将被视为所选时区时间</li>
                     </ul>
                   </div>
                 </div>
@@ -392,13 +511,13 @@ export default function TimestampConverter() {
 
         {/* Right: Results */}
         <div className="lg:col-span-7 space-y-6">
-          <div className="glass-card p-6 border-accent-cyan/20">
-            <h3 className="text-sm font-mono text-accent-cyan tracking-widest uppercase mb-6 flex items-center gap-2 font-bold">
+          <div className="glass-card p-6 border-accent-indigo/20">
+            <h3 className="text-sm font-mono text-accent-indigo tracking-widest uppercase mb-6 flex items-center gap-2 font-bold">
               <Terminal className="w-4 h-4" /> 转换结果
             </h3>
 
             {outputs.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {outputs.map((item) => (
                   <motion.div
                     key={item.label}
@@ -406,10 +525,10 @@ export default function TimestampConverter() {
                     animate={{ opacity: 1, y: 0 }}
                     className="group"
                   >
-                    <div className="glass-card p-4 flex items-center justify-between group-hover:bg-white/5 transition-all duration-300 border-accent-cyan/10">
+                    <div className="glass-card p-4 flex items-center justify-between group-hover:bg-white/5 transition-all duration-300 border-accent-indigo/10">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1.5">
-                          <span className="text-sm font-mono text-accent-cyan tracking-widest uppercase font-black">
+                          <span className="text-sm font-mono text-accent-indigo tracking-widest uppercase font-black">
                             {item.label}
                           </span>
                           <span className="text-[10px] text-white/20">
@@ -445,15 +564,15 @@ export default function TimestampConverter() {
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-white/10">
-                {mode === "ts-to-utc" ? (
+                {mode === "ts-to-datetime" ? (
                   <>
                     <Calendar className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="text-sm font-mono italic">输入时间戳查看 UTC 时间...</p>
+                    <p className="text-sm font-mono italic">输入时间戳查看对应时区时间...</p>
                   </>
                 ) : (
                   <>
                     <Clock className="w-12 h-12 mb-4 opacity-20" />
-                    <p className="text-sm font-mono italic">输入 UTC 时间查看对应时间戳...</p>
+                    <p className="text-sm font-mono italic">输入日期时间查看对应时间戳...</p>
                   </>
                 )}
               </div>
@@ -463,20 +582,20 @@ export default function TimestampConverter() {
           {/* Quick Reference */}
           <div className="glass-card p-6">
             <h4 className="text-xs font-bold text-white/30 uppercase tracking-[0.2em] mb-4">快速参考</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs text-white/40">
-              <div className="flex justify-between p-3 rounded-lg bg-white/5">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-xs text-white/40">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5">
                 <span>1 分钟</span>
                 <span className="font-mono text-white/60">60 秒</span>
               </div>
-              <div className="flex justify-between p-3 rounded-lg bg-white/5">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5">
                 <span>1 小时</span>
                 <span className="font-mono text-white/60">3,600 秒</span>
               </div>
-              <div className="flex justify-between p-3 rounded-lg bg-white/5">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5">
                 <span>1 天</span>
                 <span className="font-mono text-white/60">86,400 秒</span>
               </div>
-              <div className="flex justify-between p-3 rounded-lg bg-white/5">
+              <div className="flex flex-col items-center p-3 rounded-lg bg-white/5">
                 <span>1 年 (约)</span>
                 <span className="font-mono text-white/60">31,536,000 秒</span>
               </div>

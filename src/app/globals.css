@@ -4,6 +4,7 @@
   --color-background: #050505;
   --color-foreground: #ffffff;
   --color-accent-cyan: #00f5ff;
+  --color-accent-indigo: #818cf8;
   --color-accent-violet: #8b5cf6;
   --color-accent-rose: #fb7185;
   --color-accent-emerald: #10b981;
@@ -15,6 +16,297 @@
 :root {
   --background: #050505;
   --foreground: #ffffff;
+}
+
+/* Light mode overrides */
+html.light {
+  --background: #e2e8f0;
+  --foreground: #1e293b;
+}
+
+html.light body {
+  background-color: #e2e8f0;
+  color: #1e293b;
+}
+
+html.light .aether-bg {
+  background: #e2e8f0;
+}
+
+html.light .aether-bg::after {
+  opacity: 0.02;
+  mix-blend-mode: normal;
+}
+
+html.light .flux-orb {
+  opacity: 0.06;
+}
+
+html.light .glass {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+html.light .glass-card {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.65) 0%, rgba(255, 255, 255, 0.4) 100%);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px 0 rgba(0, 0, 0, 0.04);
+}
+
+html.light .text-white {
+  color: #0f172a;
+}
+
+html.light .text-white\/90 {
+  color: rgba(15, 23, 42, 0.9);
+}
+
+html.light .text-white\/80 {
+  color: rgba(15, 23, 42, 0.8);
+}
+
+html.light .text-white\/70 {
+  color: rgba(15, 23, 42, 0.7);
+}
+
+html.light .text-white\/60 {
+  color: rgba(15, 23, 42, 0.6);
+}
+
+html.light .text-white\/50 {
+  color: rgba(15, 23, 42, 0.55);
+}
+
+html.light .text-white\/40 {
+  color: rgba(15, 23, 42, 0.5);
+}
+
+html.light .text-white\/30 {
+  color: rgba(15, 23, 42, 0.42);
+}
+
+html.light .text-white\/20 {
+  color: rgba(15, 23, 42, 0.35);
+}
+
+html.light .text-white\/15 {
+  color: rgba(15, 23, 42, 0.28);
+}
+
+html.light .text-white\/10 {
+  color: rgba(15, 23, 42, 0.22);
+}
+
+html.light .bg-white\/5 {
+  background-color: rgba(0, 0, 0, 0.03);
+}
+
+html.light .bg-white\/10 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+html.light .bg-white\/20 {
+  background-color: rgba(0, 0, 0, 0.1);
+}
+
+html.light .bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+html.light .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.05);
+}
+
+html.light .border-white\/10 {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+html.light .border-white\/20 {
+  border-color: rgba(0, 0, 0, 0.12);
+}
+
+html.light .bg-red-500\/10 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+html.light .bg-green-500\/20 {
+  background-color: rgba(34, 197, 94, 0.15);
+}
+
+html.light .text-green-400 {
+  color: #16a34a;
+}
+
+html.light .text-red-400 {
+  color: #dc2626;
+}
+
+html.light .hover\:text-white:hover {
+  color: #0f172a;
+}
+
+html.light .hover\:bg-white\/5:hover {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+html.light .hover\:bg-white\/10:hover {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+html.light .hover\:text-red-400:hover {
+  color: #dc2626;
+}
+
+html.light *:focus {
+  outline-color: rgba(0, 0, 0, 0.2);
+}
+
+html.light input::placeholder,
+html.light textarea::placeholder {
+  color: rgba(15, 23, 42, 0.35);
+}
+
+html.light select option {
+  background-color: #f8fafc;
+  color: #0f172a;
+}
+
+html.light .text-glow {
+  text-shadow: none;
+}
+
+/* Accent colors — darkened for light mode readability */
+html.light .text-accent-cyan {
+  color: #0891b2;
+}
+html.light .text-accent-indigo {
+  color: #4f46e5;
+}
+html.light .text-accent-violet {
+  color: #6d28d9;
+}
+html.light .text-accent-emerald {
+  color: #059669;
+}
+html.light .text-accent-amber {
+  color: #b45309;
+}
+html.light .text-accent-rose {
+  color: #e11d48;
+}
+
+/* Accent background overrides for light mode */
+html.light .bg-accent-cyan\/10 {
+  background-color: color-mix(in oklab, #0891b2 10%, transparent);
+}
+html.light .bg-accent-cyan\/20 {
+  background-color: color-mix(in oklab, #0891b2 20%, transparent);
+}
+html.light .bg-accent-indigo\/10 {
+  background-color: color-mix(in oklab, #4f46e5 10%, transparent);
+}
+html.light .bg-accent-indigo\/20 {
+  background-color: color-mix(in oklab, #4f46e5 20%, transparent);
+}
+html.light .bg-accent-violet\/10 {
+  background-color: color-mix(in oklab, #6d28d9 10%, transparent);
+}
+html.light .bg-accent-violet\/20 {
+  background-color: color-mix(in oklab, #6d28d9 20%, transparent);
+}
+html.light .bg-accent-emerald\/10 {
+  background-color: color-mix(in oklab, #059669 10%, transparent);
+}
+html.light .bg-accent-emerald\/20 {
+  background-color: color-mix(in oklab, #059669 20%, transparent);
+}
+html.light .bg-accent-amber\/10 {
+  background-color: color-mix(in oklab, #b45309 10%, transparent);
+}
+html.light .bg-accent-amber\/20 {
+  background-color: color-mix(in oklab, #b45309 20%, transparent);
+}
+html.light .bg-accent-rose\/10 {
+  background-color: color-mix(in oklab, #e11d48 10%, transparent);
+}
+html.light .bg-accent-rose\/20 {
+  background-color: color-mix(in oklab, #e11d48 20%, transparent);
+}
+
+/* Ensure dark-bg code terminals look right in light mode */
+html.light .rounded-2xl.p-6.font-mono {
+  background-color: rgba(0, 0, 0, 0.03);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+html.light .rounded-2xl.p-6.font-mono .text-accent-cyan\/90 {
+  color: #0891b2;
+}
+html.light .rounded-2xl.p-6.font-mono .text-accent-emerald\/90 {
+  color: #059669;
+}
+html.light .rounded-2xl.p-6.font-mono .text-accent-amber {
+  color: #b45309;
+}
+
+/* Check icon inside colored boxes stays dark */
+html.light .text-black {
+  color: #0f172a;
+}
+
+/* Inactive navbar items — ensure readable */
+html.light a.text-white\/40 {
+  color: rgba(30, 41, 59, 0.5);
+}
+html.light .hover\:text-white\/80:hover {
+  color: rgba(30, 41, 59, 0.85);
+}
+html.light .hover\:text-white\/70:hover {
+  color: rgba(30, 41, 59, 0.75);
+}
+html.light .hover\:text-white\/60:hover {
+  color: rgba(30, 41, 59, 0.65);
+}
+html.light .hover\:text-white\/50:hover {
+  color: rgba(30, 41, 59, 0.55);
+}
+
+/* Footer in light mode */
+html.light footer .text-white\/20 {
+  color: rgba(30, 41, 59, 0.35);
+}
+html.light footer .border-white\/5 {
+  border-color: rgba(0, 0, 0, 0.08);
+}
+
+/* Data Forge dark output box in light mode */
+html.light .bg-black\/40 {
+  background-color: rgba(0, 0, 0, 0.04);
+}
+
+html.light .bg-black\/60 {
+  background-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Code/pre blocks in light mode */
+html.light .bg-black\/60.rounded-2xl {
+  background-color: rgba(0, 0, 0, 0.04);
+  border-color: rgba(0, 0, 0, 0.06);
+}
+
+/* Smooth theme transition — animate color changes globally */
+*,
+*::before,
+*::after {
+  transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease;
+}
+
+/* Exclude elements where transitions cause visual glitches */
+.flux-orb,
+.flux-orb::before,
+.flux-orb::after {
+  transition: none;
 }
 
 body {
@@ -108,6 +400,16 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #2d1b4d;
+}
+
+html.light ::-webkit-scrollbar-track {
+  background: #e2e8f0;
+}
+html.light ::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+}
+html.light ::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* Experimental Typography */

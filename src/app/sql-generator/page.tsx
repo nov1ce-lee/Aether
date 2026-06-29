@@ -291,7 +291,7 @@ export default function SqlGenerator() {
           <div className="p-3 bg-accent-emerald/10 rounded-2xl">
             <Database className="text-accent-emerald w-10 h-10" />
           </div>
-          SQL 生成器
+          SQL 指令生成
         </h2>
         <p className="text-white/40 text-lg max-w-2xl">
           解析 CREATE TABLE 语句，快速生成常用的 SQL 查询指令
